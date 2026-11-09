@@ -1,0 +1,6 @@
+build/
+deps/
+data/
+*.verify
+*.o
+*.a

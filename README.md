@@ -43,14 +43,24 @@ auto v = t.parent(t.select_leaf(5));   // SDSL CST interface
 
 ## Benchmark
 
+`scripts/install_deps.sh` needs git, CMake 3.x (CMake 4 rejects SDSL-lite's
+build files) and a C++ compiler.
+
 ```
 scripts/install_deps.sh            # SDSL-lite and CST-CN into deps/
 make bench_cst                     # build/bench_cst, build/csasize
 python3 scripts/make_test_texts.py # data/headers.txt, dna-rand.txt, dna-rep.txt
-scripts/run_bench.sh same    data/*.txt   # -> results/results_same_csa.tsv
-scripts/run_bench.sh default data/*.txt   # -> results/results_default.tsv
+scripts/run_bench.sh same    data/*.txt data/pizzachili/*   # -> results/results_same_csa.tsv
+scripts/run_bench.sh default data/*.txt data/pizzachili/*   # -> results/results_default.tsv
 python3 scripts/gen_tables.py      # -> ../paper/generated/
 ```
+
+`data/pizzachili/` holds the 50 MB versions of the Pizza&Chili texts
+(http://pizzachili.dcc.uchile.cl/texts.html): `english.50MB`, `dna.50MB`,
+`proteins.50MB`, `sources.50MB` and `dblp.xml.50MB`, gunzipped. Texts must not
+contain zero bytes. `run_bench.sh` appends to the TSVs; the committed results
+were measured on an Intel Core Ultra 5 125H with each run pinned to one
+performance core (`taskset -c 2 scripts/run_bench.sh ...`).
 
 `build/bench_cst FILE STRUCT verify` writes `STRUCT.verify` with nodes, depths,
 children, siblings, suffix links and LCAs. These files must be identical across
@@ -70,7 +80,12 @@ V1 and V2 are capped at 100,000 nodes.
 
 ## Limitations
 
-- Construction keeps the SA, ISA and LCP arrays in memory: about 35–50 bytes per
-  character at peak.
+- Construction keeps the SA, ISA and LCP arrays in memory. In our experiments
+  the peak was 23–50 bytes per character (at most about 34 on the 50 MB
+  Pizza&Chili texts).
 - The `C` library's BWT uses plain bitvectors (n⌈log σ⌉ bits).
 - Level ancestor queries and TDep are not implemented.
+
+## License
+
+MIT; see `LICENSE`.
